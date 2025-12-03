@@ -83,6 +83,21 @@ class ClienteResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('whatsapp')
+                    ->label('WhatsApp')
+                    ->icon('heroicon-o-chat-bubble-left-ellipsis')
+                    ->button()
+                    ->color(fn($record) => match(true) {
+                        !$record->proximo_recordatorio => 'secondary', // gris
+                        (\Carbon\Carbon::parse($record->proximo_recordatorio->fecha)->isToday()) => 'danger', // rojo
+                        (\Carbon\Carbon::parse($record->proximo_recordatorio->fecha)->diffInDays(now()) <= 1) => 'warning', // amarillo
+                        (\Carbon\Carbon::parse($record->proximo_recordatorio->fecha)->diffInDays(now()) <= 3) => 'warning', // amarillo
+                        default => 'success', // verde
+                    })
+                    ->url(fn($record) => $record->proximo_recordatorio
+                        ? 'https://wa.me/591' . $record->telefono . '?text=Recordatorio%20de%20cita%20para%20' . urlencode($record->nombres) . '%20el%20' . $record->proximo_recordatorio->fecha . '%3A%20' . urlencode($record->proximo_recordatorio->mensaje)
+                        : null)
+                    ->openUrlInNewTab(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

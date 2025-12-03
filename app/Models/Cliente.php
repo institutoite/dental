@@ -10,4 +10,13 @@ class Cliente extends Model
     use HasFactory;
    
     protected $guarded = [];
+    public function recordatorios()
+    {
+        return $this->hasMany(\App\Models\Recordatorio::class);
+    }
+
+    public function getProximoRecordatorioAttribute()
+    {
+        return $this->recordatorios()->where('fecha', '>=', now()->toDateString())->orderBy('fecha')->first();
+    }
 }
